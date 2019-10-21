@@ -1,5 +1,6 @@
 let settings = {
     gridSize: 9,
+    bombCount: 10,
     squareSize: 48
 }
 
@@ -18,6 +19,22 @@ class Map extends PIXI.Graphics {
         this.x = 0;
         this.y = 0;
         this.draw();
+        this.setBombs();
+    }
+
+    setBombs () {
+        let chosenTiles = [];
+        // We have to temporarily remove the tile from the children array to make sure we dont choose the same tile twice
+        // Doing it this way round stops from iterating again and again if it keeps picking tiles that are already chosen
+        for (let i = 0; i < settings.bombCount; i++) {
+            let randomIndex = Math.floor(Math.random() * this.children.length);
+            this.children[randomIndex].playState = 3;
+            chosenTiles.push(this.children.splice(randomIndex, 1)[0]);
+        }
+        // Now we just put them back as if nothing ever happened now that they're happy little bombs!
+        chosenTiles.forEach(tile => {
+            this.children.push(tile);
+        });
     }
 
     draw() {
@@ -39,8 +56,9 @@ class Tile extends PIXI.Graphics {
         this.y = posY;
         this.idX = posX / settings.squareSize;
         this.idY = posY / settings.squareSize;
-        this.playState = 0; // 0 = Unclicked, 1 = Cleared, 2 = Flagged
+        this.playState = 0; // 0 = Unclicked, 1 = Cleared, 2 = Flagged, 3 = Bomb
         this.draw();
+        this.click = () => { game.click(this); }
     }
 
     draw() {
@@ -54,9 +72,6 @@ class Tile extends PIXI.Graphics {
             .lineTo(0, 0);
     }
 
-    click () {
-        game.click(this);
-    }
 }
 
 // The game object
@@ -96,7 +111,16 @@ let game = {
         }
     },
     click (tile, right = false) {
-        console.log(tile);
+        console.log('Tile clicked:', tile.idX, tile.idY);
+        if (!right) {
+            if (tile.playState == 3) {
+                // Tile is a bomb
+            } else if (tile.playState == 0) {
+                // Not a bomb and clearable
+            }
+        } else [
+            // Flag whatever tile 
+        ]
     },
     init () {
         // Adds the canvas to the body
