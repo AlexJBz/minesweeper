@@ -1,9 +1,30 @@
+@import url('https://fonts.googleapis.com/css?family=Arvo&display=swap');
+
 * {
     margin:0;
     padding:0;
     box-sizing: border-box;
 }
 
+body {
+    font-family: 'Arvo', sans-serif;
+}
+
 canvas {
     overflow: hidden;
+}
+
+header {
+    position: absolute;
+    width:100%;
+    text-align: center;
+}
+
+h1 {
+    text-align: center;
+    color:white;
+    font-size:46px;
+    text-shadow: 3px 3px 3px black;
+    margin-top:15px;
+    pointer-events: none;
 }

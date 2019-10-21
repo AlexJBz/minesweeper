@@ -1,7 +1,7 @@
 let settings = {
     gridSize: 9,
     bombCount: 10,
-    squareSize: 48
+    squareSize: 40
 }
 
 // My personal purple
