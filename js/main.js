@@ -9,7 +9,8 @@ let colours = {
     black: 0x000000,
     gray: 0x999999,
     lightgray: 0xDDDDDD,
-    purple: 0x740574
+    purple: 0x740574,
+    red: 0XFC0303
 }
 
 // The map class the inherits from the PIXI.Graphics class
@@ -29,7 +30,7 @@ class Map extends PIXI.Graphics {
         // Doing it this way round stops from iterating again and again if it keeps picking tiles that are already chosen
         for (let i = 0; i < settings.bombCount; i++) {
             let randomIndex = Math.floor(Math.random() * this.children.length);
-            this.children[randomIndex].playState = 3;
+            this.children[randomIndex].bomb = true;
             chosenTiles.push(this.children.splice(randomIndex, 1)[0]);
         }
         // Now we just put them back as if nothing ever happened now that they're happy little bombs!
@@ -57,7 +58,8 @@ class Tile extends PIXI.Graphics {
         this.y = posY;
         this.idX = posX / settings.squareSize;
         this.idY = posY / settings.squareSize;
-        this.playState = 0; // 0 = Unclicked, 1 = Cleared, 2 = Flagged, 3 = Bomb
+        this.playState = 0; // 0 = Unclicked, 1 = cleared, 2 = Flagged
+        this.bomb = false;
         this.draw(colours.gray);
         this.click = () => { game.click(this); }
     }
@@ -79,7 +81,7 @@ class Tile extends PIXI.Graphics {
             for (let x = -1; x <= 1; x++) {
                 let tile = game.getTileByPosition(this.idX + x, this.idY + y);
                 if (tile && tile != this) {
-                    if (tile.playState == 3) {
+                    if (tile.bomb == true) {
                         bombCount++;
                     }
                 }
@@ -88,16 +90,33 @@ class Tile extends PIXI.Graphics {
         return bombCount;
     }
 
+    flag () {
+        if (this.playState == 2) {
+            this.playState = 0;
+            this.children.shift();
+        } else {
+            this.playState = 2;
+            let flag = new PIXI.Text('F', { fontFamily: 'sans-serif', fontSize: settings.squareSize - 10, fill: colours.red });
+            flag.anchor.set(0.5);
+            flag.x = settings.squareSize / 2;
+            flag.y = settings.squareSize / 2;
+            this.addChild(flag);
+        }
+    }
+
     tileClear () {
+        this.playState = 1;
         this.clear();
         this.draw(colours.lightgray);
         let bombs = this.countNearbyBombs();
         if (bombs > 0) {
-            let bombText = new PIXI.Text(bombs, { fontFamily : 'sans-serif', fontSize:settings.squareSize - 10, fill: 0x000000 });
+            let bombText = new PIXI.Text(bombs, { fontFamily: 'sans-serif', fontSize:settings.squareSize - 10, fill: 0x000000 });
             this.addChild(bombText);
             bombText.anchor.set(0.5);
             bombText.x = settings.squareSize / 2;
             bombText.y = settings.squareSize / 2;
+        } else {
+
         }
     }
 
@@ -142,17 +161,16 @@ let game = {
     click (tile, right = false) {
         console.log('Tile clicked:', tile.idX, tile.idY);
         if (!right) {
-            if (tile.playState == 3) {
+            if (tile.bomb) {
                 // Tile is a bomb
             } else if (tile.playState == 0) {
                 // Not a bomb and clearable
-                tile.playState = 1;
                 tile.tileClear();
             }
         } else {
             // Toggle the flag on whatever tile providing that it is not already cleared
             if (tile.playState != 1) {
-
+                tile.flag();
             }
         }
     },
