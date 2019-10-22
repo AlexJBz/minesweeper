@@ -1,6 +1,6 @@
 let settings = {
-    gridSize: 18,
-    bombCount: 40,
+    gridSize: 9,
+    bombCount: 10,
     squareSize: 24
 }
 
@@ -10,7 +10,8 @@ let colours = {
     gray: 0x999999,
     lightgray: 0xDDDDDD,
     purple: 0x740574,
-    red: 0XFC0303
+    red: 0XFC0303,
+    green: 0x167D32
 }
 
 // The map class the inherits from the PIXI.Graphics class
@@ -104,14 +105,19 @@ class Tile extends PIXI.Graphics {
         }
     }
 
-    blowUp () {
+    blowUp (win) {
         this.clear();
-        this.draw(colours.red);
+        if (!win) {
+            this.draw(colours.red);
+        } else {
+            this.draw(colours.green);
+        }
     }
 
     tileClear () {
         if (this.playState == 0) {
             if (!this.bomb) {
+                game.clearedTotal++;
                 this.playState = 1;
                 this.clear();
                 this.draw(colours.lightgray);
@@ -151,6 +157,7 @@ let game = {
         backgroundColor: colours.purple,
         resolution: 1   
     }),
+    clearedTotal: 0,
     playEnabled: true,
     map: new Map(settings.gridSize),
     getTileByPosition (x, y) {
@@ -192,12 +199,15 @@ let game = {
                 }
             }
         }
+        if (this.clearedTotal == ((settings.gridSize * settings.gridSize) - settings.bombCount)) {
+            this.end(true);
+        }
     },
-    end () {
+    end (win = false) {
         this.playEnabled = false;
         this.map.children.forEach(tile => {
             if (tile.bomb) {
-                tile.blowUp();
+                tile.blowUp(win);
             }
         });
     },
