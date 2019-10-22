@@ -1,7 +1,7 @@
 let settings = {
     gridSize: 9,
     bombCount: 10,
-    squareSize: 24
+    squareSize: 32
 }
 
 // My personal purple
@@ -97,7 +97,11 @@ class Tile extends PIXI.Graphics {
             this.children.shift();
         } else {
             this.playState = 2;
-            let flag = new PIXI.Text('F', { fontFamily: 'sans-serif', fontSize: settings.squareSize - 10, fill: colours.red });
+            let flag = new PIXI.Text('F', { 
+                fontFamily: 'sans-serif', 
+                fontSize: settings.squareSize - 10, 
+                fill: colours.red 
+            });
             flag.anchor.set(0.5);
             flag.x = settings.squareSize / 2;
             flag.y = settings.squareSize / 2;
@@ -123,7 +127,11 @@ class Tile extends PIXI.Graphics {
                 this.draw(colours.lightgray);
                 let bombs = this.countNearbyBombs();
                 if (bombs > 0) {
-                    let bombText = new PIXI.Text(bombs, { fontFamily: 'sans-serif', fontSize:settings.squareSize - 10, fill: 0x000000 });
+                    let bombText = new PIXI.Text(bombs, { 
+                        fontFamily: 'sans-serif', 
+                        fontSize:settings.squareSize - 10, 
+                        fill: 0x000000 
+                    });
                     this.addChild(bombText);
                     bombText.anchor.set(0.5);
                     bombText.x = settings.squareSize / 2;
