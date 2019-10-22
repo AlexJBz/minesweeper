@@ -105,18 +105,31 @@ class Tile extends PIXI.Graphics {
     }
 
     tileClear () {
-        this.playState = 1;
-        this.clear();
-        this.draw(colours.lightgray);
-        let bombs = this.countNearbyBombs();
-        if (bombs > 0) {
-            let bombText = new PIXI.Text(bombs, { fontFamily: 'sans-serif', fontSize:settings.squareSize - 10, fill: 0x000000 });
-            this.addChild(bombText);
-            bombText.anchor.set(0.5);
-            bombText.x = settings.squareSize / 2;
-            bombText.y = settings.squareSize / 2;
-        } else {
-
+        if (this.playState == 0) {
+            if (!this.bomb) {
+                this.playState = 1;
+                this.clear();
+                this.draw(colours.lightgray);
+                let bombs = this.countNearbyBombs();
+                if (bombs > 0) {
+                    let bombText = new PIXI.Text(bombs, { fontFamily: 'sans-serif', fontSize:settings.squareSize - 10, fill: 0x000000 });
+                    this.addChild(bombText);
+                    bombText.anchor.set(0.5);
+                    bombText.x = settings.squareSize / 2;
+                    bombText.y = settings.squareSize / 2;
+                } else {
+                    try {
+                        game.getTileByPosition(this.idX - 1, this.idY).tileClear();
+                        game.getTileByPosition(this.idX + 1, this.idY).tileClear();
+                        game.getTileByPosition(this.idX - 1, this.idY - 1).tileClear();
+                        game.getTileByPosition(this.idX, this.idY - 1).tileClear();
+                        game.getTileByPosition(this.idX + 1, this.idY - 1).tileClear();
+                        game.getTileByPosition(this.idX - 1, this.idY + 1).tileClear();
+                        game.getTileByPosition(this.idX, this.idY + 1).tileClear();
+                        game.getTileByPosition(this.idX + 1, this.idY + 1).tileClear();
+                    } catch {}
+                }
+            }
         }
     }
 
