@@ -1,7 +1,7 @@
 let settings = {
-    gridSize: 9,
-    bombCount: 10,
-    squareSize: 40
+    gridSize: 18,
+    bombCount: 40,
+    squareSize: 24
 }
 
 // My personal purple
@@ -120,14 +120,15 @@ class Tile extends PIXI.Graphics {
                 } else {
                     try {
                         game.getTileByPosition(this.idX - 1, this.idY).tileClear();
-                        game.getTileByPosition(this.idX + 1, this.idY).tileClear();
-                        game.getTileByPosition(this.idX - 1, this.idY - 1).tileClear();
-                        game.getTileByPosition(this.idX, this.idY - 1).tileClear();
-                        game.getTileByPosition(this.idX + 1, this.idY - 1).tileClear();
-                        game.getTileByPosition(this.idX - 1, this.idY + 1).tileClear();
-                        game.getTileByPosition(this.idX, this.idY + 1).tileClear();
-                        game.getTileByPosition(this.idX + 1, this.idY + 1).tileClear();
                     } catch {}
+                        for (let y = -1; y <= 1; y++) {
+                            for (let x = -1; x <= 1; x++) {
+                                let tile = game.getTileByPosition(this.idX + x, this.idY + y);
+                                if (tile && tile != this) {
+                                    tile.tileClear();
+                                }
+                            }
+                        }
                 }
             }
         }
@@ -174,12 +175,7 @@ let game = {
     click (tile, right = false) {
         console.log('Tile clicked:', tile.idX, tile.idY);
         if (!right) {
-            if (tile.bomb) {
-                // Tile is a bomb
-            } else if (tile.playState == 0) {
-                // Not a bomb and clearable
-                tile.tileClear();
-            }
+            tile.tileClear();
         } else {
             // Toggle the flag on whatever tile providing that it is not already cleared
             if (tile.playState != 1) {
