@@ -104,6 +104,11 @@ class Tile extends PIXI.Graphics {
         }
     }
 
+    blowUp () {
+        this.clear();
+        this.draw(colours.red);
+    }
+
     tileClear () {
         if (this.playState == 0) {
             if (!this.bomb) {
@@ -130,6 +135,8 @@ class Tile extends PIXI.Graphics {
                             }
                         }
                 }
+            } else {
+                game.end();
             }
         }
     }
@@ -144,6 +151,7 @@ let game = {
         backgroundColor: colours.purple,
         resolution: 1   
     }),
+    playEnabled: true,
     map: new Map(settings.gridSize),
     getTileByPosition (x, y) {
         let correctTile = false;
@@ -173,15 +181,25 @@ let game = {
         }
     },
     click (tile, right = false) {
-        console.log('Tile clicked:', tile.idX, tile.idY);
-        if (!right) {
-            tile.tileClear();
-        } else {
-            // Toggle the flag on whatever tile providing that it is not already cleared
-            if (tile.playState != 1) {
-                tile.flag();
+        if (this.playEnabled) {
+            console.log('Tile clicked:', tile.idX, tile.idY);
+            if (!right) {
+                tile.tileClear();
+            } else {
+                // Toggle the flag on whatever tile providing that it is not already cleared
+                if (tile.playState != 1) {
+                    tile.flag();
+                }
             }
         }
+    },
+    end () {
+        this.playEnabled = false;
+        this.map.children.forEach(tile => {
+            if (tile.bomb) {
+                tile.blowUp();
+            }
+        });
     },
     init () {
         // Adds the canvas to the body
