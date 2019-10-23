@@ -171,20 +171,25 @@ class Tile extends PIXI.Graphics {
 
 }
 
-// The game object
+// The game object.
 let game = {
+    // The actual PIXI application
     pixi: new PIXI.Application({
         width: window.innerWidth,
         height: window.innerHeight,
         backgroundColor: colours.purple,
         resolution: 1   
     }),
+    // Some extra totals/settings that are only needed once the game is initialized
     clearedTotal: 0,
     playEnabled: true,
     flagsPlaced: 0,
+    // Initializes the map.
     map: new Map(settings.gridSize),
+    // Function for getting a tile by its position.
     getTileByPosition (x, y) {
         let correctTile = false;
+        // Runs through every tile on the map.
         this.map.children.forEach((tile) => {
             if (tile.idX == x && tile.idY == y) {
                 correctTile = tile;
@@ -225,6 +230,7 @@ let game = {
                 }
             }
         }
+        // You win if you've won the game... Self explanatory.
         if (this.clearedTotal == ((settings.gridSize * settings.gridSize) - settings.bombCount)) {
             this.end(true);
         }
