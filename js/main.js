@@ -1,10 +1,11 @@
+// Settings that the classes need to make use of before the game is initialized
 let settings = {
     gridSize: 9,
     bombCount: 10,
     squareSize: 32
 }
 
-// My personal purple
+// An array of colours because PIXI is awkward and it saves me having ugly code
 let colours = {
     black: 0x000000,
     gray: 0x999999,
@@ -41,6 +42,7 @@ class Map extends PIXI.Graphics {
     }
 
     draw () {
+        // This renders the entire map
         for (let x = 0; x < this.limit; x++) {
             for (let y = 0; y < this.limit; y++) {   
                 let startPointX = x * settings.squareSize;
@@ -54,19 +56,19 @@ class Map extends PIXI.Graphics {
 class Tile extends PIXI.Graphics {
     constructor (posX, posY) {
         super();
-        this.interactive = true;
+        this.interactive = true; // Sets the graphic to be interactive.
         this.x = posX;
         this.y = posY;
         this.idX = posX / settings.squareSize;
         this.idY = posY / settings.squareSize;
-        this.playState = 0; // 0 = Unclicked, 1 = cleared, 2 = Flagged
+        this.playState = 0; // 0 = Unclicked, 1 = cleared, 2 = Flagged.
         this.bomb = false;
         this.draw(colours.gray);
-        this.click = () => { game.click(this); }
+        this.click = () => { game.click(this); } // Sets the click function from PIXI.Graphics to run my click function.
     }
 
     draw (colour) {
-        // Renders the tile
+        // Renders the tile.
         this.moveTo(-1, 0)
             .beginFill(colour)
             .lineStyle(1, colours.black)
@@ -78,6 +80,7 @@ class Tile extends PIXI.Graphics {
 
     countNearbyBombs () {
         let bombCount = 0;
+        // Counts all the bombs around the tile.
         for (let y = -1; y <= 1; y++) {
             for (let x = -1; x <= 1; x++) {
                 let tile = game.getTileByPosition(this.idX + x, this.idY + y);
@@ -95,21 +98,27 @@ class Tile extends PIXI.Graphics {
         if (this.playState == 2) {
             this.playState = 0;
             this.children.shift();
+            game.flagsPlaced--;
         } else {
-            this.playState = 2;
-            let flag = new PIXI.Text('F', { 
-                fontFamily: 'sans-serif', 
-                fontSize: settings.squareSize - 10, 
-                fill: colours.red 
-            });
-            flag.anchor.set(0.5);
-            flag.x = settings.squareSize / 2;
-            flag.y = settings.squareSize / 2;
-            this.addChild(flag);
+            // Checks to see if the player has already marked the maximum amount of bombs or not.
+            if (game.flagsPlaced < settings.bombCount) {
+                this.playState = 2;
+                let flag = new PIXI.Text('F', { 
+                    fontFamily: 'sans-serif', 
+                    fontSize: settings.squareSize - 10, 
+                    fill: colours.red 
+                });
+                flag.anchor.set(0.5);
+                flag.x = settings.squareSize / 2;
+                flag.y = settings.squareSize / 2;
+                this.addChild(flag);
+                game.flagsPlaced++;
+            }
         }
     }
 
     blowUp (win) {
+        // Changes the colour of the tile to either red or green depending on whether the player has won or lost.
         this.clear();
         if (!win) {
             this.draw(colours.red);
@@ -119,12 +128,16 @@ class Tile extends PIXI.Graphics {
     }
 
     tileClear () {
+        // Works out whether the tile can be cleared or not.
         if (this.playState == 0) {
+            // Makes sure the tile isnt a bomb.
             if (!this.bomb) {
+                // Clears the tile and changes its colour.
                 game.clearedTotal++;
                 this.playState = 1;
                 this.clear();
                 this.draw(colours.lightgray);
+                // Checks to see if there are any bombs in the area, if so adds a count to the tile.
                 let bombs = this.countNearbyBombs();
                 if (bombs > 0) {
                     let bombText = new PIXI.Text(bombs, { 
@@ -133,27 +146,28 @@ class Tile extends PIXI.Graphics {
                         fill: 0x000000 
                     });
                     this.addChild(bombText);
+                    // Positions the text in the center of the tile.
                     bombText.anchor.set(0.5);
                     bombText.x = settings.squareSize / 2;
                     bombText.y = settings.squareSize / 2;
                 } else {
-                    try {
-                        game.getTileByPosition(this.idX - 1, this.idY).tileClear();
-                    } catch {}
-                        for (let y = -1; y <= 1; y++) {
-                            for (let x = -1; x <= 1; x++) {
-                                let tile = game.getTileByPosition(this.idX + x, this.idY + y);
-                                if (tile && tile != this) {
-                                    tile.tileClear();
-                                }
+                    // Triggers every tile around this tile to try and clear if it can.
+                    for (let y = -1; y <= 1; y++) {
+                        for (let x = -1; x <= 1; x++) {
+                            let tile = game.getTileByPosition(this.idX + x, this.idY + y);
+                            // Skips over itself because theres no need.
+                            if (tile && tile != this) {
+                                tile.tileClear();
                             }
                         }
+                    }
                 }
             } else {
+                // If its a bomb end the game.
                 game.end();
             }
         }
-    }
+    }s
 
 }
 
@@ -167,6 +181,7 @@ let game = {
     }),
     clearedTotal: 0,
     playEnabled: true,
+    flagsPlaced: 0,
     map: new Map(settings.gridSize),
     getTileByPosition (x, y) {
         let correctTile = false;
@@ -189,19 +204,22 @@ let game = {
         // Got to have a fancy rightclick function because its not properly supported
         let xTileID = Math.floor(((pos.x - (window.innerWidth / 2)) / settings.squareSize) + settings.gridSize / 2);
         let yTileID = Math.floor(((pos.y - (window.innerHeight / 2)) / settings.squareSize) + settings.gridSize / 2);
+        // Checks the number is within the bounds of the grid
         if (xTileID < settings.gridSize && yTileID < settings.gridSize) {
+            // Makes sure the value is actually above 0.
             if (xTileID >= 0 && yTileID >= 0) {
+                // Clicks the tile!
                 this.click(this.getTileByPosition(xTileID, yTileID), true);
             }
         }
     },
     click (tile, right = false) {
+        // Makes sure the game hasnt ended.
         if (this.playEnabled) {
-            console.log('Tile clicked:', tile.idX, tile.idY);
             if (!right) {
                 tile.tileClear();
             } else {
-                // Toggle the flag on whatever tile providing that it is not already cleared
+                // Toggle the flag on whatever tile providing that it is not already cleared.
                 if (tile.playState != 1) {
                     tile.flag();
                 }
@@ -212,6 +230,7 @@ let game = {
         }
     },
     end (win = false) {
+        // Ends the game.
         this.playEnabled = false;
         this.map.children.forEach(tile => {
             if (tile.bomb) {
@@ -220,10 +239,10 @@ let game = {
         });
     },
     init () {
-        // Adds the canvas to the body
+        // Adds the canvas to the body.
         document.body.appendChild(this.pixi.renderer.view);
         this.positionStage();
-        // Adds an event listener that automatically resizes the renderer if the screen size were to change
+        // Adds an event listener that automatically resizes the renderer if the screen size were to change.
         window.addEventListener('resize', () => {
             this.pixi.renderer.resize(window.innerWidth, window.innerHeight);
             this.positionStage();
