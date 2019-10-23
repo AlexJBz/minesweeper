@@ -194,6 +194,25 @@ let game = {
         fontSize:settings.squareSize - 10, 
         fill: colours.white
      }),
+    // Initializes play again button 
+    playAgainButton: null,
+    initPlayAgainButton() {
+        this.playAgainButton = new PIXI.Graphics().beginFill(colours.white).lineStyle(2, colours.black).drawRect(0, 0, 150, 30);
+        let text = new PIXI.Text('Play Again', { 
+            fontFamily: 'sans-serif', 
+            fontSize: 18, 
+            fill: colours.black
+         });
+        text.anchor.set(0.5);
+        text.x = this.playAgainButton.width / 2;
+        text.y = this.playAgainButton.height / 2 - 3;
+        this.playAgainButton.addChild(text);
+        this.playAgainButton.interactive = true;
+        this.playAgainButton.click = ()=> {
+            game.restart();
+        }
+        this.playAgainButton.visible = false;
+    },
     // Function for getting a tile by its position.
     getTileByPosition (x, y) {
         let correctTile = false;
@@ -251,10 +270,23 @@ let game = {
                 tile.blowUp(win);
             }
         });
+        this.playAgainButton.visible = true;
     },
     updateFlagText () {
         let flagsLeft = settings.bombCount - this.flagsPlaced;
         this.flagText.text = 'Flags: ' + flagsLeft;
+    },
+    restart() {
+        this.pixi.stage.removeChild(this.map);
+        this.map = null;
+        this.map = new Map(settings.gridSize);
+        this.pixi.stage.addChild(this.map)
+        this.positionStage();
+        this.flagsPlaced = 0;
+        this.updateFlagText();
+        this.clearedTotal = 0;
+        this.playEnabled = true;
+        this.playAgainButton.visible = false;
     },
     init () {
         // Adds the canvas to the body.
@@ -268,6 +300,10 @@ let game = {
         disableContextMenu(this.pixi.renderer.view);
         this.pixi.stage.addChild(this.map);
         this.pixi.stage.addChild(this.flagText);
+        this.initPlayAgainButton();
+        this.pixi.stage.addChild(this.playAgainButton);
+        this.playAgainButton.x = -this.playAgainButton.width / 2;
+        this.playAgainButton.y = this.map.height / 2 + 5;
         this.flagText.x = -this.map.width / 2;
         this.flagText.y = -this.map.height / 2 - this.flagText.height - 5;
     }
