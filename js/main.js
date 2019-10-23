@@ -12,7 +12,8 @@ let colours = {
     lightgray: 0xDDDDDD,
     purple: 0x740574,
     red: 0XFC0303,
-    green: 0x167D32
+    green: 0x167D32,
+    white: 0xFFFFFF
 }
 
 // The map class the inherits from the PIXI.Graphics class
@@ -115,6 +116,7 @@ class Tile extends PIXI.Graphics {
                 game.flagsPlaced++;
             }
         }
+        game.updateFlagText();
     }
 
     blowUp (win) {
@@ -186,6 +188,12 @@ let game = {
     flagsPlaced: 0,
     // Initializes the map.
     map: new Map(settings.gridSize),
+    // Initializes flag text
+    flagText: new PIXI.Text('Flags: ' + settings.bombCount, { 
+        fontFamily: 'sans-serif', 
+        fontSize:settings.squareSize - 10, 
+        fill: colours.white
+     }),
     // Function for getting a tile by its position.
     getTileByPosition (x, y) {
         let correctTile = false;
@@ -244,6 +252,10 @@ let game = {
             }
         });
     },
+    updateFlagText () {
+        let flagsLeft = settings.bombCount - this.flagsPlaced;
+        this.flagText.text = 'Flags: ' + flagsLeft;
+    },
     init () {
         // Adds the canvas to the body.
         document.body.appendChild(this.pixi.renderer.view);
@@ -255,6 +267,9 @@ let game = {
         });
         disableContextMenu(this.pixi.renderer.view);
         this.pixi.stage.addChild(this.map);
+        this.pixi.stage.addChild(this.flagText);
+        this.flagText.x = -this.map.width / 2;
+        this.flagText.y = -this.map.height / 2 - this.flagText.height - 5;
     }
 }
 
